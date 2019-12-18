@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * polysat-intrepid-1.5.dts - Device Tree file for Polysat Intrepid v1.5 board
+ *
+ * Copyright (C) 2020 Joshua Anderson <j@joshua-anderson.com>
+ */
+/dts-v1/;
+#include "at91sam9g20ek_common.dtsi"
+
+/ {
+	model = "Polysat Intrepid v1.5";
+	compatible = "polysat,intrepid15";
+
+	chosen {
+		bootargs = "root=/dev/ram0 rw mtdparts=atmel_nand:32768K(local0),32768K(local1),32768K(local2),32768K(local3),32768K(local4),-(data)";
+		stdout-path = "serial0:115200n8";
+		initrd-start = <0x20800000>;
+		initrd-end = <0x2080304C>;
+	};
+};
