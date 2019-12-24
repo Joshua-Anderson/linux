@@ -8,7 +8,7 @@
 #include "at91sam9g20.dtsi"
 
 / {
-	model = "Polysat Intrepid v1.5";
+	model = "Polysat Intrepid v1.5 - v2";
 	compatible = "polysat,intrepid15", "atmel,at91sam9g20ek", "atmel,at91sam9g20", "atmel,at91sam9";
 
 	chosen {
@@ -49,6 +49,9 @@
 				};
 			};
 
+			dbgu: serial@fffff200 {
+				status = "okay";
+			};
 
 			tcb0: timer@fffa0000 {
 				timer@0 {
@@ -62,16 +65,58 @@
 				};
 			};
 
+			macb0: ethernet@fffc4000 {
+				phy-mode = "rmii";
+				status = "okay";
+			};
+
+			usb1: gadget@fffa4000 {
+				atmel,vbus-gpio = <&pioC 5 GPIO_ACTIVE_HIGH>;
+				status = "okay";
+			};
+
 			mmc0: mmc@fffa8000 {
 				pinctrl-0 = <
 					&pinctrl_mmc0_clk
 					&pinctrl_mmc0_slot0_cmd_dat0
 					&pinctrl_mmc0_slot0_dat1_3>;
 				status = "okay";
-				slot@1 {
+				slot@0 {
 					reg = <1>;
 					bus-width = <4>;
 				};
+			};
+
+			ssc0: ssc@fffbc000 {
+				status = "okay";
+				pinctrl-0 = <&pinctrl_ssc0_tx>;
+			};
+
+			spi0: spi@fffc8000 {
+				cs-gpios = <0>, <&pioC 11 0>, <0>, <0>;
+				mtd_dataflash@1 {
+					compatible = "atmel,at45", "atmel,dataflash";
+					spi-max-frequency = <50000000>;
+					reg = <1>;
+				};
+			};
+
+			shdwc@fffffd10 {
+				atmel,wakeup-counter = <10>;
+				atmel,wakeup-rtt-timer;
+			};
+
+			rtc@fffffd20 {
+				atmel,rtt-rtc-time-reg = <&gpbr 0x0>;
+				status = "okay";
+			};
+
+			watchdog@fffffd40 {
+				status = "okay";
+			};
+
+			gpbr: syscon@fffffd50 {
+				status = "okay";
 			};
 		};
 
@@ -97,38 +142,67 @@
 						#address-cells = <1>;
 						#size-cells = <1>;
 
-						local0@0 {
-							label = "local0";
-							reg = <0x0 0x2000000>;
+						at91bootstrap@0 {
+							label = "at91bootstrap";
+							reg = <0x0 0x20000>;
 						};
 
-						local1@2000000 {
-							label = "local1";
-							reg = <0x2000000 0x2000000>;
+						barebox@20000 {
+							label = "barebox";
+							reg = <0x20000 0x40000>;
 						};
 
-						local2@4000000 {
-							label = "local2";
-							reg = <0x4000000 0x2000000>;
+						bareboxenv@60000 {
+							label = "bareboxenv";
+							reg = <0x60000 0x20000>;
 						};
 
-						local3@6000000 {
-							label = "local3";
-							reg = <0x6000000 0x2000000>;
+						bareboxenv2@80000 {
+							label = "bareboxenv2";
+							reg = <0x80000 0x20000>;
 						};
 
-						local4@8000000 {
-							label = "local4";
-							reg = <0x8000000 0x2000000>;
+						oftree@80000 {
+							label = "oftree";
+							reg = <0xa0000 0x20000>;
 						};
 
-						data@a000000 {
+						kernel@a0000 {
+							label = "kernel";
+							reg = <0xc0000 0x400000>;
+						};
+
+						rootfs@4a0000 {
+							label = "rootfs";
+							reg = <0x4c0000 0x7800000>;
+						};
+
+						data@7ca0000 {
 							label = "data";
-							reg = <0xa000000 0x169f1000>;
+							reg = <0x7cc0000 0x8340000>;
 						};
 					};
 				};
 			};
+		};
+
+		usb0: ohci@500000 {
+			num-ports = <2>;
+			status = "okay";
+		};
+	};
+
+	i2c-gpio-0 {
+		status = "okay";
+
+		24c512@50 {
+			compatible = "atmel,24c512";
+			reg = <0x50>;
+		};
+
+		wm8731: wm8731@1b {
+			compatible = "wm8731";
+			reg = <0x1b>;
 		};
 	};
 };
