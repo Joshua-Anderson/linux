@@ -142,44 +142,34 @@
 						#address-cells = <1>;
 						#size-cells = <1>;
 
-						at91bootstrap@0 {
-							label = "at91bootstrap";
-							reg = <0x0 0x20000>;
+						local0@0 {
+							label = "local0";
+							reg = <0x0 0x2000000>;
 						};
 
-						barebox@20000 {
-							label = "barebox";
-							reg = <0x20000 0x40000>;
+						local1@2000000 {
+							label = "local1";
+							reg = <0x2000000 0x2000000>;
 						};
 
-						bareboxenv@60000 {
-							label = "bareboxenv";
-							reg = <0x60000 0x20000>;
+						local2@4000000 {
+							label = "local2";
+							reg = <0x4000000 0x2000000>;
 						};
 
-						bareboxenv2@80000 {
-							label = "bareboxenv2";
-							reg = <0x80000 0x20000>;
+						local3@6000000 {
+							label = "local3";
+							reg = <0x6000000 0x2000000>;
 						};
 
-						oftree@80000 {
-							label = "oftree";
-							reg = <0xa0000 0x20000>;
+						local4@8000000 {
+							label = "local4";
+							reg = <0x8000000 0x2000000>;
 						};
 
-						kernel@a0000 {
-							label = "kernel";
-							reg = <0xc0000 0x400000>;
-						};
-
-						rootfs@4a0000 {
-							label = "rootfs";
-							reg = <0x4c0000 0x7800000>;
-						};
-
-						data@7ca0000 {
+						data@a000000 {
 							label = "data";
-							reg = <0x7cc0000 0x8340000>;
+							reg = <0xa000000 0x169f1000>;
 						};
 					};
 				};
