@@ -67,7 +67,7 @@
 					&pinctrl_mmc0_slot0_dat1_3>;
 				status = "okay";
 				slot@0 {
-					reg = <1>;
+					reg = <0>;
 					bus-width = <4>;
 				};
 			};
