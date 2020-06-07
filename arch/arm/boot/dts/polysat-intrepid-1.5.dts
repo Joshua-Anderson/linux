@@ -56,6 +56,11 @@
 				};
 			};
 
+			macb0: ethernet@fffc4000 {
+				phy-mode = "rmii";
+				status = "okay";
+			};
+
 			usb1: gadget@fffa4000 {
 				status = "okay";
 			};
@@ -75,6 +80,25 @@
 			shdwc@fffffd10 {
 				atmel,wakeup-counter = <10>;
 				atmel,wakeup-rtt-timer;
+			};
+
+			spi0: spi@fffc8000 {
+				status = "okay";
+				cs-gpios = <&pioA 3 0>, <&pioC 11 0>;
+				spidev@0 {
+					// Super dumb hack. spidev refuses to let you mark spidev as the compatible hardware
+					// because it isn't hardware. You either have to patch the kernel to mark your hardware
+					// as comptible (bleh, no patches!), or pretend to be some random other hardware that's
+					// already been marked as compatible with spidev.
+					compatible = "rohm,dh2228fv";
+					spi-max-frequency = <50000000>;
+					reg = <0>;
+				};
+				spidev@1 {
+					compatible = "rohm,dh2228fv";
+					spi-max-frequency = <50000000>;
+					reg = <1>;
+				};
 			};
 
 			rtc@fffffd20 {
