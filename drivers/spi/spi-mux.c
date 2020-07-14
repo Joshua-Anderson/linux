@@ -129,6 +129,8 @@ static int spi_mux_probe(struct spi_device *spi)
 	struct spi_mux_priv *priv;
 	int ret;
 
+	dev_info(&spi->dev, "start probing spi-mux\n");
+
 	ctlr = spi_alloc_master(&spi->dev, sizeof(*priv));
 	if (!ctlr)
 		return -ENOMEM;
@@ -142,8 +144,10 @@ static int spi_mux_probe(struct spi_device *spi)
 		ret = PTR_ERR(priv->mux);
 		if (ret != -EPROBE_DEFER)
 			dev_err(&spi->dev, "failed to get control-mux\n");
+		dev_info(&spi->dev, "failed control mux %d\n", ret);
 		goto err_put_ctlr;
 	}
+	dev_info(&spi->dev, "got control mux\n");
 
 	priv->current_cs = SPI_MUX_NO_CS;
 
@@ -157,8 +161,12 @@ static int spi_mux_probe(struct spi_device *spi)
 	ctlr->dev.of_node = spi->dev.of_node;
 
 	ret = devm_spi_register_controller(&spi->dev, ctlr);
-	if (ret)
+	if (ret) {
+		dev_info(&spi->dev, "failed to register controller %d\n", ret);
 		goto err_put_ctlr;
+	}
+
+	dev_info(&spi->dev, "registered spi-mux\n");
 
 	return 0;
 

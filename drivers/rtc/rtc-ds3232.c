@@ -646,6 +646,8 @@ static int ds3234_probe(struct spi_device *spi)
 	};
 	struct regmap *regmap;
 
+	dev_info(&spi->dev, "started probing for ds3234 device\n");
+
 	regmap = devm_regmap_init_spi(spi, &config);
 	if (IS_ERR(regmap)) {
 		dev_err(&spi->dev, "%s: regmap allocation failed: %ld\n",
@@ -703,11 +705,19 @@ static int ds3234_probe(struct spi_device *spi)
 	return ds3232_probe(&spi->dev, regmap, spi->irq, "ds3234");
 }
 
+
+static const struct of_device_id ds3234_of_match[] = {
+	{ .compatible = "maxim,ds3234" },
+	{ }
+};
+MODULE_DEVICE_TABLE(of, ds3234_of_match);
+
 static struct spi_driver ds3234_driver = {
 	.driver = {
-		.name	 = "ds3234",
+		.name = "ds3234",
+		.of_match_table = of_match_ptr(ds3234_of_match),
 	},
-	.probe	 = ds3234_probe,
+	.probe = ds3234_probe,
 };
 
 static int ds3234_register_driver(void)
