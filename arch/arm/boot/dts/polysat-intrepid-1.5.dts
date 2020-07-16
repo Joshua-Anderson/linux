@@ -11,6 +11,11 @@
 	model = "Polysat Intrepid v1.5 - v2";
 	compatible = "polysat,intrepid15", "atmel,at91sam9g20ek", "atmel,at91sam9g20", "atmel,at91sam9";
 
+	aliases {
+		i2c0 = &i2c_gpio0;
+		i2c1 = &i2c_gpio1;
+	};
+
 	clocks {
 		slow_xtal {
 			clock-frequency = <32768>;
@@ -38,6 +43,31 @@
 					};
 
 				};
+
+				i2c0 {
+					pinctrl_i2c0: i2c0-0 {
+						atmel,pins =
+							<AT91_PIOA 23 AT91_PERIPH_A AT91_PINCTRL_NONE
+							 AT91_PIOA 24 AT91_PERIPH_A AT91_PINCTRL_NONE>;
+					};
+				};
+
+				i2c_gpio1 {
+					pinctrl_i2c_gpio1: i2c_gpio1-0 {
+						atmel,pins =
+							<AT91_PIOB 17 AT91_PERIPH_GPIO AT91_PINCTRL_MULTI_DRIVE
+							 AT91_PIOB 18 AT91_PERIPH_GPIO AT91_PINCTRL_MULTI_DRIVE>;
+					};
+				};
+
+				//	pioA: gpio@fffff400 {
+				//		spi_mux_disable {
+				//			gpio-hog;
+				//			gpios = <22 0>;
+				//			output-low;
+				//			line-name = "spi-mux-disable";
+				//		};
+				//	};
 			};
 
 			dbgu: serial@fffff200 {
@@ -103,31 +133,32 @@
 
 			spi1: spi@fffcc000 {
 				status = "okay";
-				spi@0 {
-					compatible = "spi-mux";
-					reg = <0>;
-					#address-cells = <1>;
-					#size-cells = <0>;
-					mux-controls = <&spi1_mux>;
+				cs-gpios = <&pioB 19 0>;
+				spidev@0 {
+					compatible = "rohm,dh2228fv";
 					spi-max-frequency = <10000000>;
-
-					ds3234@8 {
-						compatible = "maxim,ds3234";
-						reg = <8>;
-						spi-max-frequency = <1000000>;
-					};
+					reg = <0>;
 				};
-			};
-
-			pinctrl@fffff400 {
-				pioA: gpio@fffff400 {
-					spi_mux_disable {
-						gpio-hog;
-						gpios = <22 0>;
-						output-low;
-						line-name = "spi-mux-disable";
-					};
-				};
+				//spi@0 {
+				//	compatible = "spi-mux";
+				//	reg = <0>;
+				//	#address-cells = <1>;
+				//	#size-cells = <0>;
+				//	mux-controls = <&spi1_mux>;
+				//	spi-max-frequency = <10000000>;
+				//	sdevtest@0 {
+				//		compatible = "rohm,dh2228fv";
+				//		spi-max-frequency = <10000000>;
+				//		reg = <0>;
+				//		#address-cells = <1>;
+				//		#size-cells = <0>;
+				//	};
+				//	ds3234@8 {
+				//		compatible = "maxim,ds3234";
+				//		reg = <8>;
+				//		spi-max-frequency = <1000000>;
+				//	};
+				//};
 			};
 
 			rtc@fffffd20 {
@@ -202,13 +233,35 @@
 		};
 	};
 
-	i2c-gpio-0 {
+	i2c_gpio0: i2c-gpio-0 {
+		status = "okay";
+
+		pca0: pca9555@20 {
+			compatible = "nxp,pca9555";
+			reg = <0x20>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+	};
+
+	i2c_gpio1: i2c-gpio-1 {
+		compatible = "i2c-gpio";
+		gpios = <&pioB 17 GPIO_ACTIVE_HIGH /* sda */
+				 &pioB 18 GPIO_ACTIVE_HIGH /* scl */
+				>;
+		i2c-gpio,sda-open-drain;
+		i2c-gpio,scl-open-drain;
+		i2c-gpio,delay-us = <2>;	/* ~100 kHz */
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c_gpio1>;
 		status = "okay";
 	};
 
-	spi1_mux: spi-1-mux {
-		compatible = "gpio-mux";
-		#mux-control-cells = <0>;
-		mux-gpios = <&pioC 5 GPIO_ACTIVE_HIGH>, <&pioB 3 GPIO_ACTIVE_HIGH>, <&pioC 4 GPIO_ACTIVE_HIGH>, <&pioC 3 GPIO_ACTIVE_HIGH>;
-	};
+	//spi1_mux: spi-1-mux {
+	//	compatible = "gpio-mux";
+	//	#mux-control-cells = <0>;
+	//	mux-gpios = <&pioC 5 GPIO_ACTIVE_HIGH>, <&pioB 3 GPIO_ACTIVE_HIGH>, <&pioC 4 GPIO_ACTIVE_HIGH>, <&pioC 3 GPIO_ACTIVE_HIGH>;
+	//};
 };
