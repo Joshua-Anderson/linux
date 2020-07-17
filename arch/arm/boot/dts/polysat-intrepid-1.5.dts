@@ -1,0 +1,276 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * polysat-intrepid-1.5.dts - Device Tree file for Polysat Intrepid v1.5 board
+ *
+ * Copyright (C) 2020 Joshua Anderson <j@joshua-anderson.com>
+ */
+/dts-v1/;
+#include "at91sam9g20.dtsi"
+
+/ {
+	model = "Polysat Intrepid v1.5 - v2";
+	compatible = "polysat,intrepid15", "atmel,at91sam9g20ek", "atmel,at91sam9g20", "atmel,at91sam9";
+
+	aliases {
+		i2c0 = &i2c_gpio0;
+		i2c1 = &i2c_gpio1;
+		gpio3 = &pca0;
+		//gpio4 = &pca1;
+	};
+
+	clocks {
+		slow_xtal {
+			clock-frequency = <32768>;
+		};
+
+		main_xtal {
+			clock-frequency = <18432000>;
+		};
+	};
+
+	ahb {
+		apb {
+			pinctrl@fffff400 {
+				nand {
+					pinctrl_polysat_nand_cs: nand-cs-0 {
+						atmel,pins =
+							 <AT91_PIOC 10 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP>;
+					};
+				};
+
+				board {
+					pinctrl_pck0_as_mck: pck0_as_mck {
+						atmel,pins =
+							<AT91_PIOC 1 AT91_PERIPH_B AT91_PINCTRL_NONE>;	/* PC1 periph B */
+					};
+
+				};
+
+				i2c0 {
+					pinctrl_i2c0: i2c0-0 {
+						atmel,pins =
+							<AT91_PIOA 23 AT91_PERIPH_A AT91_PINCTRL_NONE
+							 AT91_PIOA 24 AT91_PERIPH_A AT91_PINCTRL_NONE>;
+					};
+				};
+
+				i2c_gpio1 {
+					pinctrl_i2c_gpio1: i2c_gpio1-0 {
+						atmel,pins =
+							<AT91_PIOB 17 AT91_PERIPH_GPIO AT91_PINCTRL_MULTI_DRIVE
+							 AT91_PIOB 18 AT91_PERIPH_GPIO AT91_PINCTRL_MULTI_DRIVE>;
+					};
+				};
+
+				//	pioA: gpio@fffff400 {
+				//		spi_mux_disable {
+				//			gpio-hog;
+				//			gpios = <22 0>;
+				//			output-low;
+				//			line-name = "spi-mux-disable";
+				//		};
+				//	};
+			};
+
+			dbgu: serial@fffff200 {
+				status = "okay";
+			};
+
+			tcb0: timer@fffa0000 {
+				timer@0 {
+					compatible = "atmel,tcb-timer";
+					reg = <0>, <1>;
+				};
+
+				timer@2 {
+					compatible = "atmel,tcb-timer";
+					reg = <2>;
+				};
+			};
+
+			macb0: ethernet@fffc4000 {
+				phy-mode = "rmii";
+				status = "okay";
+			};
+
+			usb1: gadget@fffa4000 {
+				status = "okay";
+			};
+
+			mmc0: mmc@fffa8000 {
+				pinctrl-0 = <
+					&pinctrl_mmc0_clk
+					&pinctrl_mmc0_slot0_cmd_dat0
+					&pinctrl_mmc0_slot0_dat1_3>;
+				status = "okay";
+				slot@0 {
+					reg = <0>;
+					bus-width = <4>;
+				};
+			};
+
+			shdwc@fffffd10 {
+				atmel,wakeup-counter = <10>;
+				atmel,wakeup-rtt-timer;
+			};
+
+			spi0: spi@fffc8000 {
+				status = "okay";
+				cs-gpios = <&pioA 3 0>, <&pioC 11 0>;
+				spidev@0 {
+					// Super dumb hack. spidev refuses to let you mark spidev as the compatible hardware
+					// because it isn't hardware. You either have to patch the kernel to mark your hardware
+					// as comptible (bleh, no patches!), or pretend to be some random other hardware that's
+					// already been marked as compatible with spidev.
+					compatible = "rohm,dh2228fv";
+					spi-max-frequency = <10000000>;
+					reg = <0>;
+				};
+				spidev@1 {
+					compatible = "rohm,dh2228fv";
+					spi-max-frequency = <10000000>;
+					reg = <1>;
+				};
+			};
+
+			spi1: spi@fffcc000 {
+				status = "okay";
+				cs-gpios = <&pioB 19 0>;
+				spidev@0 {
+					compatible = "rohm,dh2228fv";
+					spi-max-frequency = <10000000>;
+					reg = <0>;
+				};
+				//spi@0 {
+				//	compatible = "spi-mux";
+				//	reg = <0>;
+				//	#address-cells = <1>;
+				//	#size-cells = <0>;
+				//	mux-controls = <&spi1_mux>;
+				//	spi-max-frequency = <10000000>;
+				//	sdevtest@0 {
+				//		compatible = "rohm,dh2228fv";
+				//		spi-max-frequency = <10000000>;
+				//		reg = <0>;
+				//		#address-cells = <1>;
+				//		#size-cells = <0>;
+				//	};
+				//	ds3234@8 {
+				//		compatible = "maxim,ds3234";
+				//		reg = <8>;
+				//		spi-max-frequency = <1000000>;
+				//	};
+				//};
+			};
+
+			rtc@fffffd20 {
+				atmel,rtt-rtc-time-reg = <&gpbr 0x0>;
+				status = "okay";
+			};
+
+			gpbr: syscon@fffffd50 {
+				status = "okay";
+			};
+		};
+
+		ebi: ebi@10000000 {
+			status = "okay";
+
+			nand_controller: nand-controller {
+				status = "okay";
+				pinctrl-0 = <&pinctrl_polysat_nand_cs &pinctrl_nand_rb>;
+				pinctrl-names = "default";
+
+				nand@3 {
+					reg = <0x3 0x0 0x800000>;
+					rb-gpios = <&pioC 13 GPIO_ACTIVE_HIGH>;
+					cs-gpios = <&pioC 10 GPIO_ACTIVE_HIGH>;
+					nand-bus-width = <8>;
+					nand-ecc-mode = "soft";
+					nand-on-flash-bbt;
+					label = "atmel_nand";
+
+					partitions {
+						compatible = "fixed-partitions";
+						#address-cells = <1>;
+						#size-cells = <1>;
+
+						local0@0 {
+							label = "local0";
+							reg = <0x0 0x2000000>;
+						};
+
+						local1@2000000 {
+							label = "local1";
+							reg = <0x2000000 0x2000000>;
+						};
+
+						local2@4000000 {
+							label = "local2";
+							reg = <0x4000000 0x2000000>;
+						};
+
+						local3@6000000 {
+							label = "local3";
+							reg = <0x6000000 0x2000000>;
+						};
+
+						local4@8000000 {
+							label = "local4";
+							reg = <0x8000000 0x2000000>;
+						};
+
+						data@a000000 {
+							label = "data";
+							reg = <0xa000000 0x169f1000>;
+						};
+					};
+				};
+			};
+		};
+
+		usb0: ohci@500000 {
+			num-ports = <2>;
+			status = "okay";
+		};
+	};
+
+	i2c_gpio0: i2c-gpio-0 {
+		status = "okay";
+
+		pca0: pca9555@20 {
+			compatible = "nxp,pca9555";
+			reg = <0x20>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		//pca1: pca9539@77 {
+		//	compatible = "nxp,pca9539";
+		//	reg = <0x77>;
+		//	gpio-controller;
+		//	#gpio-cells = <2>;
+		//};
+	};
+
+	i2c_gpio1: i2c-gpio-1 {
+		compatible = "i2c-gpio";
+		gpios = <&pioB 17 GPIO_ACTIVE_HIGH /* sda */
+				 &pioB 18 GPIO_ACTIVE_HIGH /* scl */
+				>;
+		i2c-gpio,sda-open-drain;
+		i2c-gpio,scl-open-drain;
+		i2c-gpio,delay-us = <2>;	/* ~100 kHz */
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c_gpio1>;
+		status = "okay";
+	};
+
+	//spi1_mux: spi-1-mux {
+	//	compatible = "gpio-mux";
+	//	#mux-control-cells = <0>;
+	//	mux-gpios = <&pioC 5 GPIO_ACTIVE_HIGH>, <&pioB 3 GPIO_ACTIVE_HIGH>, <&pioC 4 GPIO_ACTIVE_HIGH>, <&pioC 3 GPIO_ACTIVE_HIGH>;
+	//};
+};
